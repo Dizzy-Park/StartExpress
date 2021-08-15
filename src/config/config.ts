@@ -51,8 +51,7 @@ interface IConfig {
   log: string;
   aws: IAws;
   url: {
-    gameApi: string;
-    messageApi: string;
+    soketApi: string;
     redis: IRedis;
   };
 }
@@ -76,8 +75,7 @@ export default {
   password: config.password,
   security: config.security,
   url: {
-    gameApi: config.url.gameApi[envType],
-    messageApi: config.url.gameApi[envType],
+    soketApi: config.url.soketApi[envType],
     redis: config.url.redis[envType],
   },
 } as IConfig;

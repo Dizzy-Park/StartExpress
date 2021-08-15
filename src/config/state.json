@@ -28,28 +28,19 @@
     "digest": "sha512"
   },
   "aws": {
-    "access_key_id": "AKIATRS6SPELVUVPBKQS",
-    "secret_access_key": "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",
-    "bucket": "file.gamepan.co.kr",
-    "url": "file.gamepan.co.kr"
+    "access_key_id": "",
+    "secret_access_key": "",
+    "bucket": "",
+    "url": ""
   },
   "url": {
-    "gameApi": {
-      "local": "http://gameapi:5001",
-      "dev": "https://gameapi.gamepan.kr",
-      "build": "http://ip-10-100-150-56.ap-northeast-2.compute.internal:5001"
-    },
-    "messageApi": {
+    "soketApi": {
       "local": "ws://message:5005",
-      "dev": "https://message.gamepan.kr",
-      "build": "ws://ip-10-100-150-213.ap-northeast-2.compute.internal:5005"
+      "dev": "",
+      "build": ""
     },
     "redis": {
-      "build": {
-        "host": "prd-redis.n64ew3.0001.apn2.cache.amazonaws.com",
-        "port": 6379,
-        "db": 0
-      },
+      "build": {},
       "dev": {
         "host": "redis",
         "port": 6379,
