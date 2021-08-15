@@ -30,17 +30,19 @@ interface IDb {
   multipleStatements: boolean;
 }
 
+export interface ISecurity {
+  key: string;
+  algorithm: string;
+  slice: number;
+}
+
 interface IConfig {
   db: IDb;
   token: {
     name: Array<string>;
     key: string;
   };
-  security: {
-    key: string;
-    algorithm: string;
-    slice: number;
-  };
+  security: ISecurity;
   password: {
     count: number;
     keylen: number;

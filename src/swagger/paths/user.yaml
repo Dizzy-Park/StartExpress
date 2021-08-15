@@ -9,24 +9,10 @@
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-                description: 이메일
-              pwd:
-                type: string
-                description: 비밀번호
+            $ref: "#/components/schemas/LoginParam"
         application/x-www-form-urlencoded:
           schema:
-            type: object
-            properties:
-              email:
-                type: string
-                description: 이메일
-              pwd:
-                type: string
-                description: 비밀번호
+            $ref: "#/components/schemas/LoginParam"
     responses:
       "200":
         content:
@@ -51,7 +37,16 @@
         description: 헤더에 토큰을 입력하세요
         schema:
           type: string
-
+    requestBody:
+      description: Optional description in *Markdown*
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/KeyParam"
+        application/x-www-form-urlencoded:
+          schema:
+            $ref: "#/components/schemas/KeyParam"
     security:
       - ApiKeyLogin: []
     responses:
@@ -69,6 +64,28 @@
 
 components:
   schemas:
+    LoginParam:
+      type: object
+      required:
+        - email
+        - pwd
+      properties:
+        email:
+          type: string
+          description: 이메일
+        pwd:
+          type: string
+          description: 비밀번호
+
+    KeyParam:
+      type: object
+      required:
+        - key
+      properties:
+        email:
+          type: string
+          description: login 시 전달한 키값 을 RSA 방식으로 암호화한 데이터
+
     UserLoginReturn:
       allOf:
         - $ref: "../openapi.yaml#/components/schemas/BaseReturn"
@@ -77,8 +94,17 @@ components:
             - data
           properties:
             data:
-              type: string
-              description: 로그인 토큰 통신히 헤더 Authorization 담아 보낼것
+              type: object
+              required:
+                - token
+                - key
+              properties:
+                token:
+                  type: string
+                  description: 로그인 토큰 통신히 헤더 Authorization 담아 보낼것
+                key:
+                  type: string
+                  description: 로그인 후 암호화를 위한 키값
 
     UserKeyReturn:
       allOf:
@@ -98,4 +124,7 @@ components:
                   description: AES 암호화 키
                 slice:
                   type: number
-                  description: AES 함호화 슬라이스값
+                  description: AES 암호화 슬라이스값
+                algorithm:
+                  type: string
+                  description: AES 암호화 방식

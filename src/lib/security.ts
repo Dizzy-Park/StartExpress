@@ -1,6 +1,5 @@
 import crypto, { Cipher, Decipher } from "crypto";
 import { Request } from "express";
-import NodeRSA from "node-rsa";
 import config from "../config/config";
 
 const privateKey = `-----BEGIN PRIVATE KEY-----
@@ -64,6 +63,10 @@ enum Encode {
   BASE64 = "base64",
   HEX = "hex",
 }
+
+export const getRandomToken = (): string => {
+  return crypto.randomBytes(8).toString(Encode.BASE64).replace("=", "");
+};
 
 /**
  * URL 에 충돌하지 않게 인코딩
@@ -152,8 +155,9 @@ export const _decode = (data: string): string => {
  * @returns string
  */
 export const encript = (txt: string): string => {
-  const key: NodeRSA = new NodeRSA(publicKey);
-  const enc: string = key.encrypt(txt, Encode.BASE64);
+  const enc: string = crypto
+    .privateEncrypt(privateKey, Buffer.from(txt, Encode.UTF8))
+    .toString(Encode.BASE64);
   return enc;
 };
 /**
@@ -162,8 +166,9 @@ export const encript = (txt: string): string => {
  * @returns string
  */
 export const decrypt = (txt: string): string => {
-  const key: NodeRSA = new NodeRSA(privateKey);
-  const enc: string = key.decrypt(txt, Encode.UTF8);
+  const enc: string = crypto
+    .privateDecrypt(privateKey, Buffer.from(txt, Encode.BASE64))
+    .toString(Encode.UTF8);
   return enc;
 };
 
