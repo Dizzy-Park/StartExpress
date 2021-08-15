@@ -1,0 +1,101 @@
+/user/login:
+  post:
+    tags:
+      - User
+    summary: 로그인
+    requestBody:
+      description: Optional description in *Markdown*
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                description: 이메일
+              pwd:
+                type: string
+                description: 비밀번호
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                description: 이메일
+              pwd:
+                type: string
+                description: 비밀번호
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLoginReturn"
+      default:
+        description: 모든 통신에러
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+
+/user/key:
+  post:
+    tags:
+      - User
+    summary: AES 암호화 키
+    parameters:
+      - in: header
+        name: x-access-token
+        description: 헤더에 토큰을 입력하세요
+        schema:
+          type: string
+
+    security:
+      - ApiKeyLogin: []
+    responses:
+      "200":
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserKeyReturn"
+      default:
+        description: 모든 통신에러
+        content:
+          application/json:
+            schema:
+              $ref: "../openapi.yaml#/components/schemas/Error"
+
+components:
+  schemas:
+    UserLoginReturn:
+      allOf:
+        - $ref: "../openapi.yaml#/components/schemas/BaseReturn"
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              type: string
+              description: 로그인 토큰 통신히 헤더 Authorization 담아 보낼것
+
+    UserKeyReturn:
+      allOf:
+        - $ref: "../openapi.yaml#/components/schemas/BaseReturn"
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              type: object
+              required:
+                - key
+                - slice
+              properties:
+                key:
+                  type: string
+                  description: AES 암호화 키
+                slice:
+                  type: number
+                  description: AES 함호화 슬라이스값

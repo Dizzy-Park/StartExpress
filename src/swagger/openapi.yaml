@@ -1,0 +1,68 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Slack Web API docs
+  description: Slack Web TEAM A의 API 문서입니다
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:4000/
+
+tags:
+  - name: User
+    description: 사용자정보
+
+paths:
+  $ref: "./paths/_index.yaml"
+
+security:
+  - ApiKeyLogin: []
+
+components:
+  securitySchemes:
+    ApiKeyLogin:
+      type: apiKey
+      in: header
+      name: authorizations
+
+  schemas:
+    BaseReturn:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          type: boolean
+          description: 성공, 실패 유무
+        error:
+          type: object
+          properties:
+            code:
+              type: number
+              description: 에러코드
+            message:
+              type: string
+              description: 에러시 메세지
+
+    Error:
+      type: object
+      required:
+        - result
+        - error
+      properties:
+        result:
+          type: boolean
+          default: false
+          description: 성공, 실패 유무
+        error:
+          type: object
+          properties:
+            code:
+              type: number
+              description: 에러코드
+            message:
+              type: string
+              description: 에러시 메세지
+            error:
+              description: 서버 에러시 메세지
+              type: object
