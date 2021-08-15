@@ -6,7 +6,7 @@ import path from "path";
 import router from "./router/router";
 import user from "./router/user";
 import { IToken, parserToken } from "./lib/auth";
-import config from "./config/config";
+import config, { ConfigEnv, envType } from "./config/config";
 import { getIp } from "./lib/security";
 import { createError, createPayload } from "./vo/payload";
 
@@ -37,7 +37,15 @@ app.get("/", (req: Request, res: Response, next: NextFunction) => {
 app.use("/router", router);
 app.use("/user", user);
 
-const swaggerSpec = YAML.load(path.join(__dirname, "../build/swagger.yaml"));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+switch (envType) {
+  case ConfigEnv.BUILD:
+    break;
+  default:
+    const swaggerSpec = YAML.load(
+      path.join(__dirname, "../build/swagger.yaml")
+    );
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    break;
+}
 
 app.listen(4000, () => console.log("start"));

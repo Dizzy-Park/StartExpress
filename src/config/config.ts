@@ -1,6 +1,6 @@
 import config from "./state.json";
 
-enum ConfigEnv {
+export enum ConfigEnv {
   LOCAL = "local",
   DEV = "dev",
   BUILD = "build",
