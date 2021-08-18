@@ -5,22 +5,24 @@ import path from "path";
 
 import router from "./router/router";
 import user from "./router/user";
-import { IToken, parserToken } from "./lib/auth";
+import { parserToken } from "./lib/auth";
 import config, { ConfigEnv, envType } from "./config/config";
 import { getIp } from "./lib/security";
-import { createError, createPayload } from "./vo/payload";
+import { connect } from "./lib/socket";
 
 const app = express();
 
 app.use((req: Request, res: Response, next) => {
+  // TODO 접속 가능한 cros 만 설정하기
   res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "*");
   // res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  res.header("Access-Control-Allow-Credentials", "true");
+  // res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "content-type, " + config.token.name.join(",").toLocaleLowerCase()
-  );
+  // res.header(
+  //   "Access-Control-Allow-Headers",
+  //   "content-type, " + config.token.name.join(",").toLocaleLowerCase()
+  // );
   next();
 });
 app.use(express.json());
@@ -49,3 +51,4 @@ switch (envType) {
 }
 
 app.listen(4000, () => console.log("start"));
+connect();

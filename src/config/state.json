@@ -35,7 +35,7 @@
   },
   "url": {
     "soketApi": {
-      "local": "ws://message:5005",
+      "local": "ws://localhost:4005",
       "dev": "",
       "build": ""
     },

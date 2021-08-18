@@ -7,7 +7,7 @@ import {
   IUser,
   IUserLoginHistory,
 } from "../db/user";
-import { getToken, ITokenArray } from "../lib/auth";
+import { getToken } from "../lib/auth";
 import {
   decrypt,
   encript,
@@ -47,7 +47,10 @@ export const login = async (
         if (ps || ps1) {
           const ip: Array<string> = getIp(req).split(".");
           const token: string = getRandomToken();
-          await addLogin(info.useridx, token, ip);
+          securityDump = token;
+          await addLogin(info.useridx, token, ip).catch(err => {
+            payload.error = createError(204, "로그인 기록 안됨");
+          });
           payload.result = true;
           payload.data = {
             token: getToken(info.useridx),
@@ -65,6 +68,8 @@ export const login = async (
   res.json(payload);
 };
 
+let securityDump: string = "";
+
 /**
  * 암호화 필요시 토큰을 통해 AES 키 반환
  */
@@ -77,8 +82,13 @@ export const securityKey = async (
   try {
     const key = reqPost<string>(req, "key");
     const info = req.context[0];
-    const loginInfo = await firstLoginToken(info.token.idx);
-    if (decrypt(key as string) === (loginInfo as IUserLoginHistory).token) {
+    console.log("securityDump", securityDump);
+    console.log("key", decrypt(key as string));
+
+    const loginInfo = await firstLoginToken(info.token.idx).catch(err => {
+      payload.error = createError(204, "토큰 못찾음");
+    });
+    if (decrypt(key as string) === (loginInfo as IUserLoginHistory)?.token) {
       payload.result = true;
       payload.data = {
         key: config.security.key,
@@ -86,7 +96,17 @@ export const securityKey = async (
         algorithm: config.security.algorithm,
       } as ISecurity;
     } else {
-      payload.error = createError(203, "Key 일치 안함");
+      // TODO 임시 인증 처리 개발후 없앨껏
+      if (securityDump === decrypt(key as string)) {
+        payload.result = true;
+        payload.data = {
+          key: config.security.key,
+          slice: config.security.slice,
+          algorithm: config.security.algorithm,
+        } as ISecurity;
+      } else {
+        payload.error = createError(203, "Key 일치 안함");
+      }
     }
   } catch (err) {
     res.status(500);

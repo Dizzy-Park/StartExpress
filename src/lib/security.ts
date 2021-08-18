@@ -166,10 +166,14 @@ export const encript = (txt: string): string => {
  * @returns string
  */
 export const decrypt = (txt: string): string => {
-  const enc: string = crypto
-    .privateDecrypt(privateKey, Buffer.from(txt, Encode.BASE64))
-    .toString(Encode.UTF8);
-  return enc;
+  try {
+    const enc: string = crypto
+      .privateDecrypt(privateKey, Buffer.from(txt, Encode.BASE64))
+      .toString(Encode.UTF8);
+    return enc;
+  } catch (err) {
+    throw err;
+  }
 };
 
 export interface IPassword {
