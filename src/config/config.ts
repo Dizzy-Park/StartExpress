@@ -37,6 +37,7 @@ export interface ISecurity {
 }
 
 interface IConfig {
+  index: number;
   db: IDb;
   token: {
     name: Array<string>;
@@ -51,9 +52,10 @@ interface IConfig {
   log: string;
   aws: IAws;
   url: {
-    soketApi: string;
+    socketApi: string;
     redis: IRedis;
   };
+  change: () => Promise<void>;
 }
 
 export const envType: ConfigEnv = ((): ConfigEnv => {
@@ -67,15 +69,47 @@ export const envType: ConfigEnv = ((): ConfigEnv => {
   }
 })();
 
-export default {
-  db: config.db[envType] as IDb,
+function getSocket(index: number): string {
+  switch (process.env.NODE_ENV) {
+    case "development":
+    case "production":
+      return config.url.socketApi[envType] as string;
+    default:
+      return config.url.socketApi[envType][
+        index % config.url.socketApi[envType].length
+      ];
+  }
+}
+
+function getDb(index: number): IDb {
+  switch (process.env.NODE_ENV) {
+    case "development":
+    case "production":
+      return config.db[envType] as IDb;
+    default:
+      return (config.db[envType] as [])[
+        index % (config.db[envType] as []).length
+      ] as IDb;
+  }
+}
+
+let configInfo: IConfig = {
+  index: 0,
+  db: getDb(0),
   token: config.token,
   log: config.log,
   aws: config.aws,
   password: config.password,
   security: config.security,
   url: {
-    soketApi: config.url.soketApi[envType],
-    redis: config.url.redis[envType],
+    socketApi: getSocket(0),
+    redis: config.url.redis[envType] as IRedis,
   },
-} as IConfig;
+  change: async () => {
+    configInfo.index++;
+    configInfo.db = getDb(configInfo.index);
+    configInfo.url.socketApi = getSocket(configInfo.index);
+  },
+};
+
+export default configInfo;

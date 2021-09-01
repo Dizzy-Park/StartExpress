@@ -4,7 +4,7 @@ import { decrypt, encript, getRandomToken } from "./security";
 
 let securityDump: string = getRandomToken();
 
-const socket: Socket = io(config.url.soketApi, {
+let socket: Socket = io(config.url.socketApi, {
   autoConnect: false,
   transports: ["websocket"],
   auth: {

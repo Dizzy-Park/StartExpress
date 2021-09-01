@@ -2,15 +2,17 @@
   "db": {
     "build": {},
     "dev": {},
-    "local": {
-      "host": "192.168.0.2",
-      "port": 3306,
-      "user": "user",
-      "password": "12341234!",
-      "database": "edoras",
-      "connectionLimit": 20,
-      "multipleStatements": true
-    }
+    "local": [
+      {
+        "host": "192.168.0.2",
+        "port": 3306,
+        "user": "user",
+        "password": "12341234!",
+        "database": "edoras",
+        "connectionLimit": 20,
+        "multipleStatements": true
+      }
+    ]
   },
   "log": "client Backend",
   "token": {
@@ -34,8 +36,8 @@
     "url": ""
   },
   "url": {
-    "soketApi": {
-      "local": "ws://localhost:4005",
+    "socketApi": {
+      "local": ["ws://localhost:4005"],
       "dev": "",
       "build": ""
     },

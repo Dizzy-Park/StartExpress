@@ -1,9 +1,34 @@
 import mysql, { MysqlError, PoolConnection } from "mysql";
 import config from "../config/config";
 
-console.log(config.db);
+let pool = mysql.createPool(config.db);
 
-const pool = mysql.createPool(config.db);
+function hasConnection(): Promise<PoolConnection> {
+  return new Promise<PoolConnection>((res, rej) => {
+    pool.getConnection((err: MysqlError, conn: PoolConnection) => {
+      if (err) {
+        rej(err);
+      }
+      res(conn);
+    });
+  });
+}
+
+async function connection() {
+  while (true) {
+    try {
+      const cnn = await hasConnection();
+      cnn.release();
+      console.log("success connection", config.db.host);
+      return;
+    } catch (err) {
+      console.log("not connection", config.db.host);
+      config.change();
+      pool = mysql.createPool(config.db);
+    }
+  }
+}
+connection();
 
 /**
  * PoolConnection 반환
