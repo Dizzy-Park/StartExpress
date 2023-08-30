@@ -9,8 +9,6 @@
 # testing
 /coverage
 
-/src/config/state.json
-
 # production
 /build
 

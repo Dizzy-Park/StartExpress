@@ -1,9 +1,11 @@
-import config from "./state.json";
+import { IDb } from '/module/mysql';
+import config from './state.json';
+import { IMongoConfig } from '/module/mongo';
 
 export enum ConfigEnv {
-  LOCAL = "local",
-  DEV = "dev",
-  BUILD = "build",
+  LOCAL = 'local',
+  DEV = 'dev',
+  BUILD = 'build',
 }
 
 interface IRedis {
@@ -21,15 +23,6 @@ interface IAws {
   url: string;
 }
 
-interface IDb {
-  host: string;
-  port: number;
-  user: string;
-  password: string;
-  database: string;
-  multipleStatements: boolean;
-}
-
 export interface ISecurity {
   key: string;
   algorithm: string;
@@ -39,77 +32,50 @@ export interface ISecurity {
 interface IConfig {
   index: number;
   db: IDb;
-  token: {
+  db2?: IDb;
+  token?: {
     name: Array<string>;
     key: string;
   };
-  security: ISecurity;
-  password: {
+  security?: ISecurity;
+  password?: {
     count: number;
     keylen: number;
     digest: string;
   };
   log: string;
   aws: IAws;
-  url: {
-    socketApi: string;
-    redis: IRedis;
-  };
-  change: () => Promise<void>;
+  mongo: IMongoConfig;
+  socket?: string;
+  redis?: IRedis;
 }
 
 export const envType: ConfigEnv = ((): ConfigEnv => {
   switch (process.env.NODE_ENV) {
-    case "development":
+    case 'development':
       return ConfigEnv.DEV;
-    case "production":
+    case 'production':
       return ConfigEnv.BUILD;
     default:
       return ConfigEnv.LOCAL;
   }
 })();
 
-function getSocket(index: number): string {
-  switch (process.env.NODE_ENV) {
-    case "development":
-    case "production":
-      return config.url.socketApi[envType] as string;
-    default:
-      return config.url.socketApi[envType][
-        index % config.url.socketApi[envType].length
-      ];
-  }
+function getDb(): IDb {
+  return config.db[envType] as IDb;
 }
 
-function getDb(index: number): IDb {
-  switch (process.env.NODE_ENV) {
-    case "development":
-    case "production":
-      return config.db[envType] as IDb;
-    default:
-      return (config.db[envType] as [])[
-        index % (config.db[envType] as []).length
-      ] as IDb;
-  }
-}
+// function getDb2(): IDb {
+//   return config.db2[envType] as IDb;
+// }
 
 let configInfo: IConfig = {
   index: 0,
-  db: getDb(0),
-  token: config.token,
+  db: getDb(),
+  // db2: getDb2(),
   log: config.log,
   aws: config.aws,
-  password: config.password,
-  security: config.security,
-  url: {
-    socketApi: getSocket(0),
-    redis: config.url.redis[envType] as IRedis,
-  },
-  change: async () => {
-    configInfo.index++;
-    configInfo.db = getDb(configInfo.index);
-    configInfo.url.socketApi = getSocket(configInfo.index);
-  },
+  mongo: config.mongo as IMongoConfig,
 };
 
 export default configInfo;

@@ -1,6 +1,6 @@
-import crypto, { Cipher, Decipher } from "crypto";
-import { Request } from "express";
-import config from "../config/config";
+import crypto, { Cipher, Decipher } from 'crypto';
+import { Request } from 'express';
+import config from '../config/config';
 
 const privateKey = `-----BEGIN PRIVATE KEY-----
 MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQCLYwNlMsZTu0iq
@@ -46,9 +46,9 @@ kwIDAQAB
  * @returns
  */
 export const getIp = (req: Request): string => {
-  var ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-  if (ip === "::1") {
-    return "127.0.0.1";
+  var ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  if (ip === '::1') {
+    return '127.0.0.1';
   }
   return ip as string;
 };
@@ -59,13 +59,13 @@ interface ICipherParam {
 }
 
 enum Encode {
-  UTF8 = "utf8",
-  BASE64 = "base64",
-  HEX = "hex",
+  UTF8 = 'utf8',
+  BASE64 = 'base64',
+  HEX = 'hex',
 }
 
 export const getRandomToken = (): string => {
-  return crypto.randomBytes(8).toString(Encode.BASE64).replace("=", "");
+  return crypto.randomBytes(8).toString(Encode.BASE64).replace('=', '');
 };
 
 /**
@@ -78,8 +78,8 @@ export const _encodeBase64 = (id: string): string => {
     (id &&
       Buffer.from(id.toString(), Encode.HEX)
         .toString(Encode.BASE64)
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")) ||
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')) ||
     id
   );
 };
@@ -92,18 +92,18 @@ export const _encodeBase64 = (id: string): string => {
 export const _decodeBase64 = (id: string): string => {
   return (
     (id &&
-      Buffer.from(
-        id.replace(/-/g, "+").replace(/_/g, "/"),
-        Encode.BASE64
-      ).toString(Encode.HEX)) ||
+      Buffer.from(id.replace(/-/g, '+').replace(/_/g, '/'), Encode.BASE64).toString(Encode.HEX)) ||
     id
   );
 };
 
-const getCipher = (): ICipherParam => {
-  const sba: Buffer = Buffer.from(config.security.key, Encode.UTF8);
-  const iv: Buffer = Buffer.from(sba.slice(0, config.security.slice));
-  return { CipherKey: sba, BinaryLike: iv };
+const getCipher = (): ICipherParam | undefined => {
+  if (config.security) {
+    const sba: Buffer = Buffer.from(config.security.key, Encode.UTF8);
+    const iv: Buffer = Buffer.from(sba.slice(0, config.security.slice));
+    return { CipherKey: sba, BinaryLike: iv };
+  }
+  return undefined;
 };
 
 /**
@@ -111,20 +111,21 @@ const getCipher = (): ICipherParam => {
  * @param data string
  * @returns string
  */
-export const _encode = (data: string): string => {
+export const _encode = (data: string) => {
   if (data) {
-    const param: ICipherParam = getCipher();
-    const cipher: Cipher = crypto.createCipheriv(
-      config.security.algorithm,
-      param.CipherKey,
-      param.BinaryLike
-    );
-    const result: string = cipher.update(
-      data.toString(),
-      Encode.UTF8,
-      Encode.BASE64
-    );
-    return result + cipher.final(Encode.BASE64);
+    if (config.security) {
+      const param = getCipher();
+      if (param) {
+        const cipher: Cipher = crypto.createCipheriv(
+          config.security.algorithm,
+          param.CipherKey,
+          param.BinaryLike,
+        );
+        const result: string = cipher.update(data.toString(), Encode.UTF8, Encode.BASE64);
+        return result + cipher.final(Encode.BASE64);
+      }
+    }
+    return undefined;
   } else {
     return data;
   }
@@ -134,16 +135,21 @@ export const _encode = (data: string): string => {
  * @param data string
  * @returns string
  */
-export const _decode = (data: string): string => {
+export const _decode = (data: string) => {
   if (data) {
-    const param: ICipherParam = getCipher();
-    const cipher: Decipher = crypto.createDecipheriv(
-      config.security.algorithm,
-      param.CipherKey,
-      param.BinaryLike
-    );
-    const result: string = cipher.update(data, Encode.BASE64, Encode.UTF8);
-    return result + cipher.final(Encode.UTF8);
+    if (config.security) {
+      const param = getCipher();
+      if (param) {
+        const cipher: Decipher = crypto.createDecipheriv(
+          config.security.algorithm,
+          param.CipherKey,
+          param.BinaryLike,
+        );
+        const result: string = cipher.update(data, Encode.BASE64, Encode.UTF8);
+        return result + cipher.final(Encode.UTF8);
+      }
+    }
+    return undefined;
   } else {
     return data;
   }
@@ -185,27 +191,34 @@ export interface IPassword {
  * @param pwd string
  * @returns IPassword {pass: string, salt: string}
  */
-export async function setPassword(pwd: string): Promise<IPassword> {
-  const buf: Buffer = crypto.randomBytes(config.password.keylen);
-  const salt: string = buf.toString(Encode.BASE64).replace("=", "");
-  return new Promise((res, rej) => {
-    crypto.pbkdf2(
-      pwd,
-      salt,
-      config.password.count,
-      config.password.keylen,
-      config.password.digest,
-      (err: Error | null, dk: Buffer) => {
-        if (err) {
-          rej(err);
-        }
-        res({
-          pass: dk.toString(Encode.BASE64).replace("=", ""),
-          salt: salt,
-        } as IPassword);
+export async function setPassword(pwd: string): Promise<IPassword | undefined> {
+  if (config.password) {
+    const buf: Buffer = crypto.randomBytes(config.password.keylen);
+    const salt: string = buf.toString(Encode.BASE64).replace('=', '');
+    return new Promise((res, rej) => {
+      if (config.password) {
+        crypto.pbkdf2(
+          pwd,
+          salt,
+          config.password.count,
+          config.password.keylen,
+          config.password.digest,
+          (err: Error | null, dk: Buffer) => {
+            if (err) {
+              rej(err);
+            }
+            res({
+              pass: dk.toString(Encode.BASE64).replace('=', ''),
+              salt: salt,
+            } as IPassword);
+          },
+        );
+      } else {
+        res(undefined);
       }
-    );
-  });
+    });
+  }
+  return undefined;
 }
 
 /**
@@ -215,26 +228,26 @@ export async function setPassword(pwd: string): Promise<IPassword> {
  * @param org string
  * @returns boolean
  */
-export async function isPassword(
-  pwd: string,
-  salt: string,
-  org: string
-): Promise<boolean> {
+export async function isPassword(pwd: string, salt: string, org: string): Promise<boolean> {
   return new Promise((res, rej) => {
     if (pwd && salt && org) {
-      crypto.pbkdf2(
-        pwd,
-        salt,
-        config.password.count,
-        config.password.keylen,
-        config.password.digest,
-        (err: Error | null, dk: Buffer) => {
-          if (err) {
-            rej(err);
-          }
-          res(org === dk.toString(Encode.BASE64).replace("=", ""));
-        }
-      );
+      if (config.password) {
+        crypto.pbkdf2(
+          pwd,
+          salt,
+          config.password.count,
+          config.password.keylen,
+          config.password.digest,
+          (err: Error | null, dk: Buffer) => {
+            if (err) {
+              rej(err);
+            }
+            res(org === dk.toString(Encode.BASE64).replace('=', ''));
+          },
+        );
+      } else {
+        res(false);
+      }
     } else {
       res(false);
     }

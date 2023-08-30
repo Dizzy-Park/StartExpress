@@ -1,0 +1,45 @@
+{
+  "host": "",
+  "log": "",
+  "aws": {
+    "access_key_id": "",
+    "secret_access_key": "",
+    "bucket": "",
+    "url": ""
+  },
+  "db": {
+    "local": {
+      "host": "",
+      "port": 3306,
+      "user": "",
+      "password": "",
+      "database": "",
+      "multipleStatements": false
+    },
+    "dev": {
+      "host": "",
+      "port": 3306,
+      "user": "",
+      "password": "",
+      "database": "",
+      "multipleStatements": false
+    },
+    "build": {
+      "host": "",
+      "port": 3306,
+      "user": "",
+      "password": "",
+      "database": "",
+      "multipleStatements": false
+    }
+  },
+  "mongo": {
+    "host": "",
+    "option": {
+      "dbName": "",
+      "replicaSet": "",
+      "readPreference": "primary",
+      "ssl": true
+    }
+  }
+}
